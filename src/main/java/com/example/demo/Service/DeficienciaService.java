@@ -1,13 +1,14 @@
 package com.example.demo.Service;
 
-import java.util.List;
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.Form.Pessoa.DeficienciaForm;
+import com.example.demo.Form.Pessoa.PessoaForm;
 import com.example.demo.Model.Deficiencia;
+import com.example.demo.Model.Pessoa;
 import com.example.demo.Repository.DeficienciaRepository;
+import com.example.demo.Repository.PessoaRepository;
 
 @Service
 public class DeficienciaService {
@@ -16,29 +17,16 @@ public class DeficienciaService {
     private DeficienciaRepository deficienciaRepository;
 
     
-    public List<Deficiencia> findAll() {
-        return deficienciaRepository.findAll();
-    }
-
-    
-    public Deficiencia create(Deficiencia deficiencia) {
-        return deficienciaRepository.save(deficiencia);
-    }
-
-    
-    public Deficiencia update(Deficiencia deficiencia, Long id) {
-        Optional<Deficiencia> deficienciaExistente = deficienciaRepository.findById(id);
+    public Deficiencia create(DeficienciaForm deficienciaForm){
         
-        if (deficienciaExistente.isPresent()) {
-            Deficiencia deficienciaAtualizada = deficienciaExistente.get();
-            
-            deficienciaAtualizada.setNome(deficiencia.getNome());
-            deficienciaAtualizada.setCategoria(deficiencia.getCategoria());
-            
-            return deficienciaRepository.save(deficienciaAtualizada);
-        } else {
-            throw new IllegalArgumentException("Deficiência não encontrada.");
-        }
-    }
+    Deficiencia deficiencia = new Deficiencia();
 
+    deficiencia.setNome(deficienciaForm.getNome());
+    deficiencia.setCategoria(deficienciaForm.getCategoria());
+
+    this.deficienciaRepository.save(deficiencia);
+
+    return deficiencia;
+
+    }
 }
