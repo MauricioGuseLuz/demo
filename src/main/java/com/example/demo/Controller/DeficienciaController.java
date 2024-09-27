@@ -8,10 +8,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.demo.Form.Pessoa.DeficienciaForm;
+import com.example.demo.Form.Deficiencia.DeficienciaForm;
 import com.example.demo.Form.Pessoa.PessoaForm;
 import com.example.demo.Model.Categoria;
 import com.example.demo.Model.Deficiencia;
@@ -40,8 +41,16 @@ public class DeficienciaController {
 
 
     @GetMapping("/deficiencia")
-    public String index(){
-       return "deficiencia/listar";
+    public String index(Model model, @RequestParam("display") Optional<String> display){
+        String finalDisplay = display.orElse("true");
+
+        List<Deficiencia> deficiencias = deficienciaRepository.findByAtivo(Boolean.valueOf(finalDisplay));
+
+        model.addAttribute("deficiencias", deficiencias);
+
+        
+       
+        return "deficiencia/listar";
     }
 
     @GetMapping("/deficiencia/create")
@@ -72,5 +81,52 @@ public class DeficienciaController {
         deficienciaService.create(deficienciaForm);
         
         return "redirect:/deficiencia";
+    }
+    @GetMapping("/deficiencia/update/{id}")
+    public String update(@PathVariable Long id, Model model){
+        Optional<Deficiencia> deficiencia = deficienciaRepository.findById(id);
+
+        DeficienciaForm deficienciaForm = new DeficienciaForm(deficiencia.orElseThrow());
+
+        List<Categoria> listaCategoria = categoriaRepository.findAll();
+        deficienciaForm.setListCategorias(listaCategoria);
+
+        model.addAttribute("deficienciaForm", deficienciaForm);
+        model.addAttribute("id", deficiencia.orElseThrow().getId());
+
+        return "/deficiencia/update";
+    }
+    @GetMapping("/deficiencia/remover/{id}")
+    public String remover(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        Optional<Deficiencia> deficiencia = this.deficienciaRepository.findById(id);
+        Deficiencia deficienciaModel = deficiencia.get();
+
+        if (deficienciaModel.isAtivo()) {
+            deficienciaModel.setAtivo(false);    
+            redirectAttributes.addFlashAttribute("successMessage", 
+            "Excluído com sucesso!");
+        }else{
+            deficienciaModel.setAtivo(true);
+            redirectAttributes.addFlashAttribute("successMessage", 
+            "Recuperado com sucesso!");
+        }
+        
+        this.deficienciaRepository.save(deficienciaModel);
+        
+        return "redirect:/deficiencia";        
+    }
+    @GetMapping("/deficiencia/visualizar/{id}")
+    public String visualizar(@PathVariable Long id, Model model){
+        Optional<Deficiencia> deficiencia = deficienciaRepository.findById(id);
+
+        DeficienciaForm deficienciaForm = new DeficienciaForm(deficiencia.get());
+
+        List<Categoria> listaCategoria = categoriaRepository.findAll();
+        deficienciaForm.setListCategorias(listaCategoria);
+
+        model.addAttribute("deficienciaForm", deficienciaForm);
+        model.addAttribute("id", deficiencia.get().getId());
+
+        return "/deficiencia/visualizar";
     }
 }
